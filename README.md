@@ -1,0 +1,2 @@
+# sharedlibs
+shared library
