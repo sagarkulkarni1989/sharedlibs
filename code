@@ -1,0 +1,38 @@
+#this code is used to check AWS instance status and run the pipeline 
+
+@Library('aws-ec2-utils') _ // Load the shared library
+
+pipeline {
+    agent {
+        // Specify the label of the slave machine where the job should run
+        label 'Slave2'
+    }
+    environment {
+        // Set environment variables if needed, e.g., AWS region
+        AWS_REGION = 'ap-south-1' // Change to your desired region
+    }
+    stages {
+        stage('Fetch EC2 Instances Details') {
+            steps {
+                script {
+                    ec2Utils.fetchEc2InstancesDetails()
+                }
+            }
+        }
+        stage('Test') {
+            agent { label 'test1' } // This stage runs on the test-node
+            steps {
+                script {
+                    node('Slave2'){
+                    // Call checkAndStartStoppedInstances from the shared library
+                    ec2Utils.checkAndStartStoppedInstances()
+                    }
+
+                    // Proceed with the rest of the test steps
+                    echo 'Running tests...'
+                    sh 'ip addr'
+                }
+            }
+        }
+    }
+}
